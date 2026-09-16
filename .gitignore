@@ -1,0 +1,52 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node modules
+**/node_modules/
+
+# Build artifacts
+**/dist/
+**/build/
+**/.next/
+**/.nuxt/
+**/coverage/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Google Cloud / service account credentials
+*gcloud*.json
+*service-account*.json
+*credentials*.json
+
+# Terraform / infra secrets
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Temporary files
+*.tmp
+*.temp

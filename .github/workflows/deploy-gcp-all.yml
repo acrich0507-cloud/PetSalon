@@ -1,0 +1,100 @@
+name: Deploy PetSalon To Google Cloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: GCP Project ID
+        required: true
+      region:
+        description: Cloud Run and bucket region
+        required: true
+        default: asia-east1
+      service_name:
+        description: Cloud Run service name (lowercase)
+        required: true
+        default: petsalon
+      frontend_bucket:
+        description: Frontend GCS bucket name (no gs:// prefix)
+        required: true
+      cors_origins:
+        description: Comma-separated CORS origins for backend
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set project and enable services
+        shell: bash
+        run: |
+          gcloud config set project "${{ inputs.project_id }}"
+          gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com storage.googleapis.com --project "${{ inputs.project_id }}"
+
+      - name: Deploy backend (Cloud Run)
+        id: backend
+        shell: bash
+        run: |
+          gcloud run deploy "${{ inputs.service_name }}" \
+            --source ./backend \
+            --region "${{ inputs.region }}" \
+            --allow-unauthenticated \
+            --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},CORS_ORIGINS=${{ inputs.cors_origins }}" \
+            --project "${{ inputs.project_id }}" \
+            --quiet
+
+          BACKEND_URL=$(gcloud run services describe "${{ inputs.service_name }}" --region "${{ inputs.region }}" --project "${{ inputs.project_id }}" --format='value(status.url)')
+          echo "backend_url=$BACKEND_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare frontend runtime config
+        shell: bash
+        run: |
+          cat > ./frontend/app-config.js <<EOF
+          window.APP_CONFIG = {
+            apiBase: "${{ steps.backend.outputs.backend_url }}"
+          };
+          EOF
+
+      - name: Create frontend bucket if missing
+        shell: bash
+        run: |
+          if ! gcloud storage buckets describe "gs://${{ inputs.frontend_bucket }}" --project "${{ inputs.project_id }}" >/dev/null 2>&1; then
+            gcloud storage buckets create "gs://${{ inputs.frontend_bucket }}" \
+              --location="${{ inputs.region }}" \
+              --uniform-bucket-level-access \
+              --project "${{ inputs.project_id }}"
+          fi
+
+      - name: Upload frontend assets
+        shell: bash
+        run: |
+          gcloud storage rsync ./frontend "gs://${{ inputs.frontend_bucket }}" \
+            --recursive \
+            --exclude='deploy-gcp-frontend.ps1|app-config.example.js|README.md'
+
+      - name: Set cache headers
+        shell: bash
+        run: |
+          gcloud storage objects update "gs://${{ inputs.frontend_bucket }}/**" \
+            --cache-control='public,max-age=300' || true
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "Backend URL: ${{ steps.backend.outputs.backend_url }}"
+          echo "Frontend bucket: gs://${{ inputs.frontend_bucket }}"
+          echo "Static URL (temporary): https://storage.googleapis.com/${{ inputs.frontend_bucket }}/index.html"
