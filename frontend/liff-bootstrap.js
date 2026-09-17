@@ -93,8 +93,18 @@ async function resolveLiffConfig() {
     }
   }
 
+  let backendError = null;
+  try {
+    backendError = await response.json();
+  } catch {
+    backendError = { error: "non-json error response" };
+  }
+
   if (STRICT_DB_LIFF) {
-    throw new Error("LIFF ID not found from backend resolver. Please verify DB mapping in petsalon.shop.sh_liff_id.");
+    throw new Error(
+      `LIFF resolve failed (status=${response.status}, shop_code=${shopCode || "<empty>"}). ` +
+      `Backend message: ${backendError?.error || "unknown"}`
+    );
   }
 
   // Final fallback: local map by shopCode

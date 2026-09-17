@@ -17,7 +17,7 @@ Copy .env.example to .env and fill values.
 
 - PORT: API port, default 8080
 - SUPABASE_URL: your Supabase URL
-- SUPABASE_SERVICE_ROLE_KEY: backend secret key
+- SUPABASE_SERVICE_PETSALON_KEY: backend secret key for petsalon-backend
 - CORS_ORIGINS: comma-separated allowed origins
 
 Example:
@@ -74,7 +74,7 @@ Set-Location "F:\Project\PetSalon\backend"
   -Region "asia-east1" `
   -ServiceName "petsalon" `
   -SupabaseUrl "https://xxxx.supabase.co" `
-  -SupabaseServiceRoleKey "your-service-role-key" `
+    -SupabaseServicePetsalonKey "your-service-role-key" `
   -CorsOrigins "https://your-frontend-domain.com"
 ```
 

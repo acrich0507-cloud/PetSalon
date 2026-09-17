@@ -27,8 +27,8 @@
 2. SUPABASE_URL
 - 例如 https://xxxx.supabase.co
 
-3. SUPABASE_SERVICE_ROLE_KEY
-- Supabase service role key
+3. SUPABASE_SERVICE_PETSALON_KEY
+- Supabase service role key for petsalon-backend
 
 ## 執行全新部署 Workflow
 
