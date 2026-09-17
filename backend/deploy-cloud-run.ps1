@@ -12,7 +12,10 @@ param(
   [string]$SupabaseUrl,
 
   [Parameter(Mandatory = $true)]
-  [string]$SupabaseServiceRoleKey,
+  [string]$SupabaseServicePetsalonKey,
+
+  [Parameter(Mandatory = $false)]
+  [string]$SupabaseSchema = "petsalon",
 
   [Parameter(Mandatory = $true)]
   [string]$CorsOrigins
@@ -35,7 +38,7 @@ gcloud run deploy $ServiceName `
   --source . `
   --region $Region `
   --allow-unauthenticated `
-  --set-env-vars "SUPABASE_URL=$SupabaseUrl,SUPABASE_SERVICE_ROLE_KEY=$SupabaseServiceRoleKey,CORS_ORIGINS=$CorsOrigins" `
+  --set-env-vars "SUPABASE_URL=$SupabaseUrl,SUPABASE_SERVICE_PETSALON_KEY=$SupabaseServicePetsalonKey,SUPABASE_SCHEMA=$SupabaseSchema,CORS_ORIGINS=$CorsOrigins" `
   --project $ProjectId
 
 Write-Host "[4/4] Print service URL"

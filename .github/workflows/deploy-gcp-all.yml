@@ -53,7 +53,7 @@ jobs:
             --source ./backend \
             --region "${{ inputs.region }}" \
             --allow-unauthenticated \
-            --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},CORS_ORIGINS=${{ inputs.cors_origins }}" \
+            --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_PETSALON_KEY=${{ secrets.SUPABASE_SERVICE_PETSALON_KEY }},CORS_ORIGINS=${{ inputs.cors_origins }}" \
             --project "${{ inputs.project_id }}" \
             --quiet
 
